@@ -44,6 +44,9 @@ RUN $CKAN_HOME/bin/pip install -r /usr/lib/ckan/default/src/ckanext-harvest/pip-
 #import db for plugins:
 #paster —plugin=ckanext-harvest harvester initdb —config=/etc/ckan/default/
 
+# Install ckanext-pdfview
+RUN $CKAN_HOME/bin/pip install ckanext-pdfview
+
 # Configure apache
 ADD ./contrib/docker/apache.conf /etc/apache2/sites-available/ckan_default.conf
 RUN echo "Listen 8080" > /etc/apache2/ports.conf
