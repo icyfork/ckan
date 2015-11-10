@@ -86,8 +86,8 @@ b2NrZXIuc2gKY2htb2QgNzU1IC9ib2NrZXIuc2gK\
 # | if [[ -f /bocker.sh ]]; then source /bocker.sh; fi
 # | ed_supervisor_env () 
 # | { 
-# |     export SUPERVISOR_URL="https://github.com/icyfork/supervisor/archive/v3.1.3_fluentd.tar.gz?patch=2015-Oct-25";
-# |     export SUPERVISOR_SHA1="d018f1c7da708fd7167cd59b331ab1a387ea1fac";
+# |     export SUPERVISOR_URL="https://github.com/icyfork/supervisor/archive/v3.1.3_fluentd.tar.gz?patch=2015-Nov-10";
+# |     export SUPERVISOR_SHA1="6bf1a61abd49b64aac15500a989094d163eecbf1";
 # |     export SUPERVISOR_VERSION="3.1.3"
 # | }
 # | ed_supervisor_install_base () 
@@ -141,9 +141,9 @@ RUN echo \
 c2V0IC1ldXgKaWYgW1sgLWYgL2JvY2tlci5zaCBdXTsgdGhlbiBzb3VyY2UgL2JvY2tlci5\
 zaDsgZmkKZWRfc3VwZXJ2aXNvcl9lbnYgKCkgCnsgCiAgICBleHBvcnQgU1VQRVJWSVNPUl\
 9VUkw9Imh0dHBzOi8vZ2l0aHViLmNvbS9pY3lmb3JrL3N1cGVydmlzb3IvYXJjaGl2ZS92M\
-y4xLjNfZmx1ZW50ZC50YXIuZ3o/cGF0Y2g9MjAxNS1PY3QtMjUiOwogICAgZXhwb3J0IFNV\
-UEVSVklTT1JfU0hBMT0iZDAxOGYxYzdkYTcwOGZkNzE2N2NkNTliMzMxYWIxYTM4N2VhMWZ\
-hYyI7CiAgICBleHBvcnQgU1VQRVJWSVNPUl9WRVJTSU9OPSIzLjEuMyIKfQplZF9zdXBlcn\
+y4xLjNfZmx1ZW50ZC50YXIuZ3o/cGF0Y2g9MjAxNS1Ob3YtMTAiOwogICAgZXhwb3J0IFNV\
+UEVSVklTT1JfU0hBMT0iNmJmMWE2MWFiZDQ5YjY0YWFjMTU1MDBhOTg5MDk0ZDE2M2VlY2J\
+mMSI7CiAgICBleHBvcnQgU1VQRVJWSVNPUl9WRVJTSU9OPSIzLjEuMyIKfQplZF9zdXBlcn\
 Zpc29yX2luc3RhbGxfYmFzZSAoKSAKeyAKICAgIGVkX2FwdF9pbnN0YWxsIGNyb24gZXhpb\
 TQtZGFlbW9uLWxpZ2h0IGxvZ3JvdGF0ZSBjdXJsIGNhLWNlcnRpZmljYXRlczsKICAgIGVk\
 X2FwdF9jbGVhbjsKICAgIHJtIC1yZiAvZXRjL3N1cGVydmlzb3IvOwogICAgbWtkaXIgLXB\
