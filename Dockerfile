@@ -35,6 +35,14 @@ RUN $CKAN_HOME/bin/pip install -e $CKAN_HOME/src/ckan/
 RUN ln -s $CKAN_HOME/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini
 ADD ./contrib/docker/apache.wsgi $CKAN_CONFIG/apache.wsgi
 
+# Thanks to @huynq
+# Install CKANExt-Harvest
+# https://github.com/ckan/ckanext-harvest
+RUN $CKAN_HOME/bin/pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest
+RUN $CKAN_HOME/bin/pip install -r /usr/lib/ckan/default/src/ckanext-harvest/pip-requirements.txt
+#import db for plugins:
+#paster —plugin=ckanext-harvest harvester initdb —config=/etc/ckan/default/
+
 # Configure apache
 ADD ./contrib/docker/apache.conf /etc/apache2/sites-available/ckan_default.conf
 RUN echo "Listen 8080" > /etc/apache2/ports.conf
