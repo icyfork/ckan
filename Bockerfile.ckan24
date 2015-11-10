@@ -1,0 +1,162 @@
+#!/bin/bash
+# Purpose: Ckan 2.4
+# Author : Anh K. Huynh
+
+ed_reuse  "$(dirname ${BASH_SOURCE[0]:-.})"/../icy/bocker/Bockerfile.nginx
+ed_expose 80
+ed_volume /var/lib/ckan
+
+ed_ship   --later \
+            ed_ckan24_configure \
+            ed_ckan24_configure_nginx \
+            ed_ckan24_configure_apache \
+            ed_ckan24_daemonize
+
+ed_env    CKAN_HOME   /usr/lib/ckan/default
+ed_env    CKAN_CONFIG /etc/ckan/default
+ed_env    CKAN_DATA   /var/lib/ckan
+
+ed_bocker() {
+  ed_group \
+    ed_ckan24_pre_install
+
+  ed_copy .                             /usr/lib/ckan/default/src/ckan/
+  ed_copy ./contrib/docker/apache.wsgi  /etc/ckan/default/apache.wsgi
+  ed_copy ./contrib/docker/my_init.d/   /etc/s.supervisor/
+
+  ed_group \
+    ed_ckan24_install
+}
+
+ed_ckan24_pre_install() {
+  mkdir -pv \
+    $CKAN_HOME/src/ \
+    $CKAN_CONFIG \
+    $CKAN_DATA \
+    /etc/apache2/sites-available/
+}
+
+ed_ckan24_install() {
+  ed_apt_install \
+    python-minimal \
+    python-dev \
+    python-virtualenv \
+    libevent-dev \
+    libpq-dev \
+    apache2 \
+    libapache2-mod-wsgi \
+    build-essential \
+    git
+
+  virtualenv $CKAN_HOME
+
+  $CKAN_HOME/bin/pip install -r $CKAN_HOME/src/ckan/requirements.txt
+  $CKAN_HOME/bin/pip install -e $CKAN_HOME/src/ckan/
+  ln -s $CKAN_HOME/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini
+
+  # Thanks to @huynq
+  # Install CKANExt-Harvest
+  # https://github.com/ckan/ckanext-harvest
+  $CKAN_HOME/bin/pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest
+  $CKAN_HOME/bin/pip install -r /usr/lib/ckan/default/src/ckanext-harvest/pip-requirements.txt
+  #import db for plugins:
+  #paster —plugin=ckanext-harvest harvester initdb —config=/etc/ckan/default/
+
+  echo "Listen 8080" > /etc/apache2/ports.conf
+
+  ed_apt_purge build-essential git
+
+  ed_supervisor_generator "ed_ckan24_configure"
+}
+
+ed_ckan24_configure() {
+  chown www-data:www-data $CKAN_DATA
+
+  ed_ckan24_configure_nginx
+  ed_ckan24_configure_apache
+
+  ed_supervisor_config_template \
+    --name "apache" \
+    --command "/bocker.sh ed_ckan24_daemonize" \
+    --dir "/" \
+    --user "root"
+}
+
+ed_ckan24_daemonize() {
+  source /etc/apache2/envvars
+  exec /usr/sbin/apache2 -D FOREGROUND
+}
+
+ed_ckan24_configure_nginx() {
+  rm -f /etc/nginx/sites/ping.conf
+  echo "tcp_nopush on;"   > /etc/nginx/conf.d/11-tcp_nopush.http
+  echo "tcp_nodelay on;"  > /etc/nginx/conf.d/11-tcp_nodelay.http
+
+  rm -rfv /var/cache/nginx/
+  mkdir -pv /var/cache/nginx/
+  chown www-data -Rc /var/cache/nginx/
+
+  cat > /etc/nginx/conf.d/12-ckan.http \
+<<-EOF
+  # Unless these are set explicitly, the types_hash_bucket_size is set at
+  # runtime depending on the processor's cache line size, which can (and does)
+  # cause inconsistent behaviour on different hardware. Our
+  # /etc/nginx/mime.types requires at least a 32 bit bucket, but we set these to
+  # the latest nginx default values to be on the safe size.
+  types_hash_bucket_size 64;
+  types_hash_max_size 1024;
+
+  proxy_cache_path  /var/cache/nginx/proxycache levels=1:2 keys_zone=cache:30m max_size=250m;
+  proxy_temp_path   /var/cache/nginx/proxytemp  1 2;
+EOF
+
+  cat  > /etc/nginx/sites/ckan.conf \
+<<'EOF'
+  server {
+    listen 80   default_server;
+    server_name _;
+
+    client_max_body_size 100M;
+
+    location / {
+      proxy_pass                          http://127.0.0.1:8080/;
+
+      proxy_set_header X-Real-IP          $remote_addr;
+      proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto  $scheme;
+      proxy_set_header X-Forwarded-Server $host;
+      proxy_set_header X-Forwarded-Host   $host;
+      proxy_set_header Host               $host;
+
+      proxy_cache                         cache;
+      proxy_cache_bypass                  $cookie_auth_tkt;
+      proxy_no_cache                      $cookie_auth_tkt;
+      proxy_cache_valid                   30m;
+      proxy_cache_key                     $host$scheme$proxy_host$request_uri;
+    }
+  }
+EOF
+}
+
+ed_ckan24_configure_apache() {
+  rm -fv /etc/apache2/sites-enabled/*
+
+  cat > /etc/apache2/sites-enabled/ckan_default.conf \
+<<EOF
+  <VirtualHost 0.0.0.0:8080>
+    ServerName ckan
+    ServerAlias *
+
+    <Directory "${CKAN_CONFIG}">
+      Require all granted
+    </Directory>
+
+    WSGIScriptAlias / ${CKAN_CONFIG}/apache.wsgi
+    WSGIPassAuthorization On
+
+    ErrorLog  /var/log/apache2/ckan.error.log
+    CustomLog /var/log/apache2/ckan.acces.log combined
+  </VirtualHost>
+EOF
+
+}
