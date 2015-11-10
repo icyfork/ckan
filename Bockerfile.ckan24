@@ -69,6 +69,9 @@ ed_ckan24_install() {
   #import db for plugins:
   #paster —plugin=ckanext-harvest harvester initdb —config=/etc/ckan/default/
 
+  # Install ckanext-pdfview
+  $CKAN_HOME/bin/pip install ckanext-pdfview
+
   echo "Listen 8080" > /etc/apache2/ports.conf
 
   ed_apt_purge build-essential git
