@@ -24,13 +24,9 @@ write_config () {
       "sqlalchemy.url = ${DATABASE_URL}" \
       "solr_url = ${SOLR_URL}" \
       "ckan.storage_path = /var/lib/ckan" \
-      "email_to = disabled@example.com" \
+      "email_to = ${ERROR_EMAIL:-root@localhost}" \
       "error_email_from = ckan@$(hostname -f)" \
       "ckan.site_url = ${CKAN_SITE_URL:-http://127.0.0.1/}"
-
-  if [ -n "$ERROR_EMAIL" ]; then
-    sed -i -e "s&^#email_to.*&email_to = ${ERROR_EMAIL}&" "$CONFIG"
-  fi
 }
 
 link_postgres_url () {
