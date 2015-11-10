@@ -2,7 +2,7 @@
 # Purpose: Ckan 2.4
 # Author : Anh K. Huynh
 
-ed_reuse  "$(dirname ${BASH_SOURCE[0]:-.})"/../../icy/bocker/Bockerfile.nginx
+ed_reuse  "$(dirname ${BASH_SOURCE[0]:-.})"/../icy/bocker/Bockerfile.nginx
 ed_expose 80
 ed_volume /var/lib/ckan
 ed_from   "ubuntu:14.04"
