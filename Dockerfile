@@ -66,6 +66,6 @@ VOLUME ["/var/lib/ckan"]
 EXPOSE 80
 
 RUN DEBIAN_FRONTEND=noninteractive \
-    apt-get -q -y remove build-essential git \
+    apt-get remove -y build-essential git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
