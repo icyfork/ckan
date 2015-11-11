@@ -71,9 +71,12 @@ ed_ckan24_install() {
 
   # Install ckanext-pdfview
   $CKAN_HOME/bin/pip install ckanext-pdfview
+  $CKAN_HOME/bin/pip install pdftables
 
   echo "Listen 8080" > /etc/apache2/ports.conf
 
+  # We don't remove some -dev packages to support some hot-fix future
+  # package installation !!! The `build-essential` package is very small.
   ed_apt_purge build-essential git
 
   ed_supervisor_generator "ed_ckan24_configure"
