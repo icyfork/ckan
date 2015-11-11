@@ -17,6 +17,7 @@ ed_ship   --later \
             ed_ckan24_configure \
             ed_ckan24_configure_nginx \
             ed_ckan24_configure_apache \
+            ed_ckan24_configure_dataproxy \
             ed_ckan24_daemonize
 
 ed_env    CKAN_HOME   /usr/lib/ckan/default
@@ -71,7 +72,8 @@ ed_ckan24_install() {
 
   # Install ckanext-pdfview
   $CKAN_HOME/bin/pip install ckanext-pdfview
-  # $CKAN_HOME/bin/pip install pdftables
+  $CKAN_HOME/bin/pip install -e git+https://github.com/okfn/ckanext-archiver.git#egg=ckanext-archiver
+  $CKAN_HOME/bin/pip install -e git+https://github.com/datagovuk/ckanext-datapreview.git#egg=ckanext-datapreview
 
   echo "Listen 8080" > /etc/apache2/ports.conf
 
@@ -88,12 +90,33 @@ ed_ckan24_configure() {
 
   ed_ckan24_configure_nginx
   ed_ckan24_configure_apache
+  ed_ckan24_configure_dataproxy
 
   ed_supervisor_config_template \
     --name "apache" \
     --command "/bocker.sh ed_ckan24_daemonize" \
     --dir "/" \
     --user "root"
+}
+
+ed_ckan24_configure_dataproxy() {
+  local _dataproxy_url1 _dataproxy_url2
+
+  if [[ -z "${CKAN_DATAPROXY_URL:-}" ]]; then
+    echo >&2 ":: $FUNCNAME: Data proxy is not configured. Return."
+    return 0
+  fi
+
+  _dataproxy_url1="${CKAN_DATAPROXY_URL:-http://dataproxyq}"
+  _dataproxy_url2="$(sed -r -e 's#^https?:##g' <<< $_dataproxy_url1)"
+
+  grep -REl -- \
+    '((my\.jsonpdataproxyUrl)|(my\.dataproxy_url))[[:space:]]*=' \
+    $CKAN_HOME/ \
+  | while read FILE; do
+      sed -i -r -e "s#(my\.jsonpdataproxyUrl)[[:space:]]*=.*\$#\1 = '${_dataproxy_url1}';#g" $FILE
+      sed -i -r -e "s#(my\.dataproxy_url)[[:space:]]*=.*\$#\1 = '${_dataproxy_url2}';#g"     $FILE
+    done
 }
 
 ed_ckan24_daemonize() {
