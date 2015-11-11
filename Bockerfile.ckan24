@@ -71,7 +71,7 @@ ed_ckan24_install() {
 
   # Install ckanext-pdfview
   $CKAN_HOME/bin/pip install ckanext-pdfview
-  $CKAN_HOME/bin/pip install pdftables
+  # $CKAN_HOME/bin/pip install pdftables
 
   echo "Listen 8080" > /etc/apache2/ports.conf
 
