@@ -80,8 +80,8 @@ ed_ckan24_install() {
 }
 
 ed_ckan24_configure() {
-  chown www-data:www-data $CKAN_DATA
-  chown :www-data $CKAN_HOME $CKAN_CONFIG
+  chown -R www-data:www-data $CKAN_DATA
+  chown -R :www-data $CKAN_HOME $CKAN_CONFIG
 
   ed_ckan24_configure_nginx
   ed_ckan24_configure_apache
