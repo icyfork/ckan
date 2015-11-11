@@ -54,7 +54,9 @@ ed_ckan24_install() {
     apache2 \
     libapache2-mod-wsgi \
     build-essential \
-    git
+    git \
+    libxml2-dev \
+    libxslt1-dev
 
   virtualenv $CKAN_HOME
 
