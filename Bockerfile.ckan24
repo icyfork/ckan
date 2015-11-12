@@ -116,8 +116,9 @@ ed_ckan24_configure_dataproxy() {
     '((my\.jsonpdataproxyUrl)|(my\.dataproxy_url))[[:space:]]*=' \
     $CKAN_HOME/ \
   | while read FILE; do
-      sed -i -r -e "s#(my\.jsonpdataproxyUrl)[[:space:]]*=.*\$#\1 = '${_dataproxy_url1}';#g" $FILE
-      sed -i -r -e "s#(my\.dataproxy_url)[[:space:]]*=.*\$#\1 = '${_dataproxy_url2}';#g"     $FILE
+      echo >&2 ":: $FUNCNAME ~~ patching $FILE..."
+      sed -i -r -e "s#(my\.jsonpdataproxyUrl)[[:space:]]*=[[:space:]]*[^;]+;#\1 = '${_dataproxy_url1}';#g" $FILE
+      sed -i -r -e "s#(my\.dataproxy_url)[[:space:]]*=[[:space:]]*[^;]+;#\1 = '${_dataproxy_url2}';#g"     $FILE
     done
 }
 
