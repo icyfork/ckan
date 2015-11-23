@@ -195,8 +195,8 @@ ed_ckan24_configure_apache() {
     WSGIScriptAlias / ${CKAN_CONFIG}/apache.wsgi
     WSGIPassAuthorization On
 
-    ErrorLog  /var/log/apache2/ckan.error.log
-    CustomLog /var/log/apache2/ckan.acces.log combined
+    ErrorLog  /var/log/apache2/error.log
+    CustomLog /dev/null combined
   </VirtualHost>
 EOF
 
