@@ -2,10 +2,10 @@
 # Purpose: Ckan 2.4
 # Author : Anh K. Huynh
 
-if [[ -f "$(dirname ${BASH_SOURCE[0]:-.})"/icy/bocker/Bockerfile.nginx ]]; then
-  ed_reuse "$(dirname ${BASH_SOURCE[0]:-.})"/icy/bocker/Bockerfile.nginx
-elif [[ -f "$(dirname ${BASH_SOURCE[0]:-.})"/../icy/bocker/Bockerfile.nginx ]]; then
-  ed_reuse "$(dirname ${BASH_SOURCE[0]:-.})"/../icy/bocker/Bockerfile.nginx
+if [[ -f "$(dirname ${BASH_SOURCE[0]:-.})"/icy/bocker/Bockerfile.supervisor ]]; then
+  ed_reuse "$(dirname ${BASH_SOURCE[0]:-.})"/icy/bocker/Bockerfile.supervisor
+elif [[ -f "$(dirname ${BASH_SOURCE[0]:-.})"/../icy/bocker/Bockerfile.supervisor ]]; then
+  ed_reuse "$(dirname ${BASH_SOURCE[0]:-.})"/../icy/bocker/Bockerfile.supervisor
 fi
 
 ed_expose 80
@@ -15,7 +15,6 @@ ed_from   "ubuntu:14.04"
 
 ed_ship   --later \
             ed_ckan24_configure \
-            ed_ckan24_configure_nginx \
             ed_ckan24_configure_apache \
             ed_ckan24_configure_dataproxy \
             ed_ckan24_daemonize
@@ -90,7 +89,6 @@ ed_ckan24_configure() {
   chown -R www-data:www-data $CKAN_DATA
   chown -R :www-data $CKAN_HOME $CKAN_CONFIG
 
-  ed_ckan24_configure_nginx
   ed_ckan24_configure_apache
   ed_ckan24_configure_dataproxy
 
@@ -127,64 +125,12 @@ ed_ckan24_daemonize() {
   exec /usr/sbin/apache2 -D FOREGROUND
 }
 
-ed_ckan24_configure_nginx() {
-  rm -f /etc/nginx/sites/ping.conf
-  echo "tcp_nopush on;"   > /etc/nginx/conf.d/11-tcp_nopush.http
-  echo "tcp_nodelay on;"  > /etc/nginx/conf.d/11-tcp_nodelay.http
-
-  rm -rfv /var/cache/nginx/
-  mkdir -pv /var/cache/nginx/
-  chown www-data -Rc /var/cache/nginx/
-
-  cat > /etc/nginx/conf.d/12-ckan.http \
-<<-EOF
-  # Unless these are set explicitly, the types_hash_bucket_size is set at
-  # runtime depending on the processor's cache line size, which can (and does)
-  # cause inconsistent behaviour on different hardware. Our
-  # /etc/nginx/mime.types requires at least a 32 bit bucket, but we set these to
-  # the latest nginx default values to be on the safe size.
-  types_hash_bucket_size 64;
-  types_hash_max_size 1024;
-
-  proxy_cache_path  /var/cache/nginx/proxycache levels=1:2 keys_zone=cache:30m max_size=250m;
-  proxy_temp_path   /var/cache/nginx/proxytemp  1 2;
-EOF
-
-  cat  > /etc/nginx/sites/ckan.conf \
-<<'EOF'
-  server {
-    listen 80   default_server;
-    server_name _;
-
-    client_max_body_size 100M;
-
-    location / {
-      proxy_pass                          http://127.0.0.1:8080/;
-
-      proxy_set_header X-Real-IP          $remote_addr;
-      proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto  $scheme;
-      proxy_set_header X-Forwarded-Server $host;
-      proxy_set_header X-Forwarded-Host   $host;
-      proxy_set_header Host               $host;
-
-      proxy_cache                         cache;
-      proxy_cache_bypass                  $cookie_auth_tkt;
-      proxy_no_cache                      $cookie_auth_tkt;
-      proxy_cache_valid                   30m;
-      proxy_cache_key                     $host$scheme$proxy_host$request_uri;
-      proxy_read_timeout                  240s;
-    }
-  }
-EOF
-}
-
 ed_ckan24_configure_apache() {
   rm -fv /etc/apache2/sites-enabled/*
 
   cat > /etc/apache2/sites-enabled/ckan_default.conf \
 <<EOF
-  <VirtualHost 0.0.0.0:8080>
+  <VirtualHost 0.0.0.0:80>
     ServerName ckan
     ServerAlias *
 
