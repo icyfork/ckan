@@ -76,6 +76,7 @@ ed_ckan24_install() {
   $CKAN_HOME/bin/pip install -e git+https://github.com/okfn/ckanext-archiver.git#egg=ckanext-archiver
   $CKAN_HOME/bin/pip install -e git+https://github.com/datagovuk/ckanext-datapreview.git#egg=ckanext-datapreview
 
+  # FIXME: Remove this stupid line
   echo "Listen 8080" > /etc/apache2/ports.conf
 
   # We don't remove some -dev packages to support some hot-fix future
@@ -127,6 +128,8 @@ ed_ckan24_daemonize() {
 
 ed_ckan24_configure_apache() {
   rm -fv /etc/apache2/sites-enabled/*
+
+  echo "Listen 80" > /etc/apache2/ports.conf
 
   cat > /etc/apache2/sites-enabled/ckan_default.conf \
 <<EOF
