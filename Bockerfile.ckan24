@@ -10,7 +10,6 @@ fi
 
 ed_expose 80
 ed_volume /var/lib/ckan
-ed_from   "ubuntu:14.04"
 
 
 ed_ship   --later \
