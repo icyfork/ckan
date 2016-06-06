@@ -86,8 +86,10 @@ ed_ckan24_install() {
 }
 
 ed_ckan24_configure() {
-  chown -R www-data:www-data $CKAN_DATA
-  chown -R :www-data $CKAN_HOME $CKAN_CONFIG
+  # Number of files may be very large, and `chown` process
+  # would be very very very very slow....
+  chown www-data:www-data $CKAN_DATA
+  chown :www-data $CKAN_HOME $CKAN_CONFIG
 
   ed_ckan24_configure_apache
   ed_ckan24_configure_dataproxy
